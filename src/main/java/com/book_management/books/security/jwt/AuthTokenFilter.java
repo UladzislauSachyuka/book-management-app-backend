@@ -20,11 +20,17 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import com.book_management.books.security.services.UserDetailsServiceImpl;
 
 public class AuthTokenFilter extends OncePerRequestFilter {
-    @Autowired
-    private JwtUtils jwtUtils;
+
+    private final JwtUtils jwtUtils;
+    private final UserDetailsServiceImpl userDetailsService;
 
     @Autowired
-    private UserDetailsServiceImpl userDetailsService;
+    public AuthTokenFilter(
+            JwtUtils jwtUtils,
+            UserDetailsServiceImpl userDetailsService) {
+        this.jwtUtils = jwtUtils;
+        this.userDetailsService = userDetailsService;
+    }
 
     private static final Logger logger = LoggerFactory.getLogger(AuthTokenFilter.class);
 

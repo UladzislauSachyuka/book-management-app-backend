@@ -29,11 +29,18 @@ import com.book_management.books.repository.UserRepository;
 @RequestMapping("/api")
 public class BookController {
 
-    @Autowired
-    BookRepository bookRepository;
+    private static final String USER_NOT_FOUND = "User not found";
+
+    private final BookRepository bookRepository;
+    private final UserRepository userRepository;
 
     @Autowired
-    UserRepository userRepository;
+    public BookController(
+            BookRepository bookRepository,
+            UserRepository userRepository) {
+        this.bookRepository = bookRepository;
+        this.userRepository = userRepository;
+    }
 
     @GetMapping("/books")
     public ResponseEntity<List<Book>> getAllBooks(Principal principal) {
@@ -41,7 +48,7 @@ public class BookController {
             String username = principal.getName();
 
             User user = userRepository.findByUsername(username)
-                    .orElseThrow(() -> new RuntimeException("User not found"));
+                    .orElseThrow(() -> new RuntimeException(USER_NOT_FOUND));
 
             List<Book> books = bookRepository.findByUser(user);
 
@@ -60,7 +67,7 @@ public class BookController {
         try {
             String username = principal.getName();
             User user = userRepository.findByUsername(username)
-                    .orElseThrow(() -> new RuntimeException("User not found"));
+                    .orElseThrow(() -> new RuntimeException(USER_NOT_FOUND));
 
             Optional<Book> bookData = bookRepository.findById(id);
             if (bookData.isPresent() && bookData.get().getUser().equals(user)) {
@@ -78,12 +85,12 @@ public class BookController {
         try {
             String username = principal.getName();
             User user = userRepository.findByUsername(username)
-                    .orElseThrow(() -> new RuntimeException("User not found"));
+                    .orElseThrow(() -> new RuntimeException(USER_NOT_FOUND));
 
             book.setUser(user);
 
-            Book _book = bookRepository.save(book);
-            return new ResponseEntity<>(_book, HttpStatus.CREATED);
+            Book savedBook = bookRepository.save(book);
+            return new ResponseEntity<>(savedBook, HttpStatus.CREATED);
         } catch (Exception e) {
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -94,16 +101,16 @@ public class BookController {
         try {
             String username = principal.getName();
             User user = userRepository.findByUsername(username)
-                    .orElseThrow(() -> new RuntimeException("User not found"));
+                    .orElseThrow(() -> new RuntimeException(USER_NOT_FOUND));
 
             Optional<Book> bookData = bookRepository.findById(id);
             if (bookData.isPresent() && bookData.get().getUser().equals(user)) {
-                Book _book = bookData.get();
-                _book.setTitle(book.getTitle());
-                _book.setAuthor(book.getAuthor());
-                _book.setReadingStartDate(book.getReadingStartDate());
-                _book.setReadingEndDate(book.getReadingEndDate());
-                return new ResponseEntity<>(bookRepository.save(_book), HttpStatus.OK);
+                Book existingBook = bookData.get();
+                existingBook.setTitle(book.getTitle());
+                existingBook.setAuthor(book.getAuthor());
+                existingBook.setReadingStartDate(book.getReadingStartDate());
+                existingBook.setReadingEndDate(book.getReadingEndDate());
+                return new ResponseEntity<>(bookRepository.save(existingBook), HttpStatus.OK);
             } else {
                 return new ResponseEntity<>(HttpStatus.FORBIDDEN);
             }
@@ -128,7 +135,7 @@ public class BookController {
         try {
             String username = principal.getName();
             User user = userRepository.findByUsername(username)
-                    .orElseThrow(() -> new RuntimeException("User not found"));
+                    .orElseThrow(() -> new RuntimeException(USER_NOT_FOUND));
 
             List<Book> books;
             if (status.equalsIgnoreCase("not-read")) {
@@ -155,7 +162,7 @@ public class BookController {
         try {
             String username = principal.getName();
             User user = userRepository.findByUsername(username)
-                    .orElseThrow(() -> new RuntimeException("User not found"));
+                    .orElseThrow(() -> new RuntimeException(USER_NOT_FOUND));
 
             LocalDate parsedDate = LocalDate.parse(endDate);
 
@@ -177,7 +184,7 @@ public class BookController {
         try {
             String username = principal.getName();
             User user = userRepository.findByUsername(username)
-                    .orElseThrow(() -> new RuntimeException("User not found"));
+                    .orElseThrow(() -> new RuntimeException(USER_NOT_FOUND));
 
             List<Book> books = bookRepository.findByUserAndTitleContainingIgnoreCase(user, title);
 
@@ -198,7 +205,7 @@ public class BookController {
         try {
             String username = principal.getName();
             User user = userRepository.findByUsername(username)
-                    .orElseThrow(() -> new RuntimeException("User not found"));
+                    .orElseThrow(() -> new RuntimeException(USER_NOT_FOUND));
 
             Sort sort = order.equalsIgnoreCase("desc") ? Sort.by("readingStartDate").descending() : Sort.by("readingStartDate").ascending();
 
@@ -221,7 +228,7 @@ public class BookController {
         try {
             String username = principal.getName();
             User user = userRepository.findByUsername(username)
-                    .orElseThrow(() -> new RuntimeException("User not found"));
+                    .orElseThrow(() -> new RuntimeException(USER_NOT_FOUND));
 
             Sort sort = order.equalsIgnoreCase("desc") ? Sort.by("readingEndDate").descending() : Sort.by("readingEndDate").ascending();
 
