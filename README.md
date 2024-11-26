@@ -171,7 +171,7 @@ management.drawio…]()
 а) Backend
   План: 12ч
   Факт: 14ч
-b) Frontend
+b) Frontend 
   План: 6ч
   Факт: 8ч
 c) Бд
