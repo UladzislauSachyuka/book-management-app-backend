@@ -163,8 +163,8 @@
 management.drawio…]()
 
 
-## Sonarcloud (backend): https://sonarcloud.io/project/overview?id=UladzislauSachyuka_book-management-app-backend
-## Sonarcloud (frontend): https://sonarcloud.io/project/overview?id=UladzislauSachyuka_book-management-app-frontend
+### Sonarcloud (backend): https://sonarcloud.io/project/overview?id=UladzislauSachyuka_book-management-app-backend
+### Sonarcloud (frontend): https://sonarcloud.io/project/overview?id=UladzislauSachyuka_book-management-app-frontend
 
 ### 1. Авторизация
 
