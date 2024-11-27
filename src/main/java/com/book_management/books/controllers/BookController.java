@@ -44,203 +44,163 @@ public class BookController {
 
     @GetMapping("/books")
     public ResponseEntity<List<Book>> getAllBooks(Principal principal) {
-        try {
-            String username = principal.getName();
+        String username = principal.getName();
 
-            User user = userRepository.findByUsername(username)
-                    .orElseThrow(() -> new RuntimeException(USER_NOT_FOUND));
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException(USER_NOT_FOUND));
 
-            List<Book> books = bookRepository.findByUser(user);
+        List<Book> books = bookRepository.findByUser(user);
 
-            if (books.isEmpty()) {
-                return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-            }
-
-            return new ResponseEntity<>(books, HttpStatus.OK);
-        } catch (Exception e) {
-            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        if (books.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
+
+        return new ResponseEntity<>(books, HttpStatus.OK);
     }
 
     @GetMapping("/books/{id}")
     public ResponseEntity<Book> getBookById(@PathVariable("id") Long id, Principal principal) {
-        try {
-            String username = principal.getName();
-            User user = userRepository.findByUsername(username)
-                    .orElseThrow(() -> new RuntimeException(USER_NOT_FOUND));
+        String username = principal.getName();
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException(USER_NOT_FOUND));
 
-            Optional<Book> bookData = bookRepository.findById(id);
-            if (bookData.isPresent() && bookData.get().getUser().equals(user)) {
-                return new ResponseEntity<>(bookData.get(), HttpStatus.OK);
-            } else {
-                return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-            }
-        } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        Optional<Book> bookData = bookRepository.findById(id);
+        if (bookData.isPresent() && bookData.get().getUser().equals(user)) {
+            return new ResponseEntity<>(bookData.get(), HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
     }
 
     @PostMapping("/books/add")
     public ResponseEntity<Book> createBook(@RequestBody Book book, Principal principal) {
-        try {
-            String username = principal.getName();
-            User user = userRepository.findByUsername(username)
-                    .orElseThrow(() -> new RuntimeException(USER_NOT_FOUND));
+        String username = principal.getName();
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException(USER_NOT_FOUND));
 
-            book.setUser(user);
+        book.setUser(user);
 
-            Book savedBook = bookRepository.save(book);
-            return new ResponseEntity<>(savedBook, HttpStatus.CREATED);
-        } catch (Exception e) {
-            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+        Book savedBook = bookRepository.save(book);
+        return new ResponseEntity<>(savedBook, HttpStatus.CREATED);
     }
 
     @PutMapping("/books/{id}")
     public ResponseEntity<Book> updateBook(@PathVariable("id") Long id, @RequestBody Book book, Principal principal) {
-        try {
-            String username = principal.getName();
-            User user = userRepository.findByUsername(username)
-                    .orElseThrow(() -> new RuntimeException(USER_NOT_FOUND));
+        String username = principal.getName();
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException(USER_NOT_FOUND));
 
-            Optional<Book> bookData = bookRepository.findById(id);
-            if (bookData.isPresent() && bookData.get().getUser().equals(user)) {
-                Book existingBook = bookData.get();
-                existingBook.setTitle(book.getTitle());
-                existingBook.setAuthor(book.getAuthor());
-                existingBook.setReadingStartDate(book.getReadingStartDate());
-                existingBook.setReadingEndDate(book.getReadingEndDate());
-                return new ResponseEntity<>(bookRepository.save(existingBook), HttpStatus.OK);
-            } else {
-                return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-            }
-        } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        Optional<Book> bookData = bookRepository.findById(id);
+        if (bookData.isPresent() && bookData.get().getUser().equals(user)) {
+            Book existingBook = bookData.get();
+            existingBook.setTitle(book.getTitle());
+            existingBook.setAuthor(book.getAuthor());
+            existingBook.setReadingStartDate(book.getReadingStartDate());
+            existingBook.setReadingEndDate(book.getReadingEndDate());
+            return new ResponseEntity<>(bookRepository.save(existingBook), HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
     }
 
     @DeleteMapping("/books/{id}")
     public ResponseEntity<HttpStatus> deleteBook(@PathVariable("id") Long id) {
-        try {
-            bookRepository.deleteById(id);
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-        } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+        bookRepository.deleteById(id);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     @GetMapping("/books/filter/status")
     public ResponseEntity<List<Book>> getBooksByStatus(
             @RequestParam("status") String status, Principal principal) {
-        try {
-            String username = principal.getName();
-            User user = userRepository.findByUsername(username)
-                    .orElseThrow(() -> new RuntimeException(USER_NOT_FOUND));
+        String username = principal.getName();
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException(USER_NOT_FOUND));
 
-            List<Book> books;
-            if (status.equalsIgnoreCase("not-read")) {
-                books = bookRepository.findByUserAndReadingEndDateIsNull(user);
-            } else if (status.equalsIgnoreCase("read")) {
-                books = bookRepository.findByUserAndReadingEndDateIsNotNull(user);
-            } else {
-                return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-            }
-
-            if (books.isEmpty()) {
-                return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-            }
-
-            return new ResponseEntity<>(books, HttpStatus.OK);
-        } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        List<Book> books;
+        if (status.equalsIgnoreCase("not-read")) {
+            books = bookRepository.findByUserAndReadingEndDateIsNull(user);
+        } else if (status.equalsIgnoreCase("read")) {
+            books = bookRepository.findByUserAndReadingEndDateIsNotNull(user);
+        } else {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
+
+        if (books.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        }
+
+        return new ResponseEntity<>(books, HttpStatus.OK);
     }
 
     @GetMapping("/books/filter/date")
     public ResponseEntity<List<Book>> getBooksByEndDate(
             @RequestParam("endDate") String endDate, Principal principal) {
-        try {
-            String username = principal.getName();
-            User user = userRepository.findByUsername(username)
-                    .orElseThrow(() -> new RuntimeException(USER_NOT_FOUND));
+        String username = principal.getName();
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException(USER_NOT_FOUND));
 
-            LocalDate parsedDate = LocalDate.parse(endDate);
+        LocalDate parsedDate = LocalDate.parse(endDate);
 
-            List<Book> books = bookRepository.findByUserAndReadingEndDate(user, parsedDate);
+        List<Book> books = bookRepository.findByUserAndReadingEndDate(user, parsedDate);
 
-            if (books.isEmpty()) {
-                return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-            }
-
-            return new ResponseEntity<>(books, HttpStatus.OK);
-        } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        if (books.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
+
+        return new ResponseEntity<>(books, HttpStatus.OK);
     }
 
     @GetMapping("/books/filter/title")
     public ResponseEntity<List<Book>> getBooksByTitle(
             @RequestParam("title") String title, Principal principal) {
-        try {
-            String username = principal.getName();
-            User user = userRepository.findByUsername(username)
-                    .orElseThrow(() -> new RuntimeException(USER_NOT_FOUND));
+        String username = principal.getName();
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException(USER_NOT_FOUND));
 
-            List<Book> books = bookRepository.findByUserAndTitleContainingIgnoreCase(user, title);
+        List<Book> books = bookRepository.findByUserAndTitleContainingIgnoreCase(user, title);
 
-            if (books.isEmpty()) {
-                return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-            }
-
-            return new ResponseEntity<>(books, HttpStatus.OK);
-        } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        if (books.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
+
+        return new ResponseEntity<>(books, HttpStatus.OK);
     }
 
     @GetMapping("/books/sort/startDate")
     public ResponseEntity<List<Book>> getBooksSortedByStartDate(
             @RequestParam(value = "order", defaultValue = "asc") String order,
             Principal principal) {
-        try {
-            String username = principal.getName();
-            User user = userRepository.findByUsername(username)
-                    .orElseThrow(() -> new RuntimeException(USER_NOT_FOUND));
+        String username = principal.getName();
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException(USER_NOT_FOUND));
 
-            Sort sort = order.equalsIgnoreCase("desc") ? Sort.by("readingStartDate").descending() : Sort.by("readingStartDate").ascending();
+        Sort sort = order.equalsIgnoreCase("desc") ? Sort.by("readingStartDate").descending() : Sort.by("readingStartDate").ascending();
 
-            List<Book> books = bookRepository.findByUser(user, sort);
+        List<Book> books = bookRepository.findByUser(user, sort);
 
-            if (books.isEmpty()) {
-                return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-            }
-
-            return new ResponseEntity<>(books, HttpStatus.OK);
-        } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        if (books.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
+
+        return new ResponseEntity<>(books, HttpStatus.OK);
     }
 
     @GetMapping("/books/sort/endDate")
     public ResponseEntity<List<Book>> getBooksSortedByEndDate(
             @RequestParam(value = "order", defaultValue = "asc") String order,
             Principal principal) {
-        try {
-            String username = principal.getName();
-            User user = userRepository.findByUsername(username)
-                    .orElseThrow(() -> new RuntimeException(USER_NOT_FOUND));
+        String username = principal.getName();
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException(USER_NOT_FOUND));
 
-            Sort sort = order.equalsIgnoreCase("desc") ? Sort.by("readingEndDate").descending() : Sort.by("readingEndDate").ascending();
+        Sort sort = order.equalsIgnoreCase("desc") ? Sort.by("readingEndDate").descending() : Sort.by("readingEndDate").ascending();
 
-            List<Book> books = bookRepository.findByUser(user, sort);
+        List<Book> books = bookRepository.findByUser(user, sort);
 
-            if (books.isEmpty()) {
-                return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-            }
-
-            return new ResponseEntity<>(books, HttpStatus.OK);
-        } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        if (books.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
+
+        return new ResponseEntity<>(books, HttpStatus.OK);
     }
 }
